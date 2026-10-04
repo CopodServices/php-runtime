@@ -8,6 +8,7 @@ FROM php:${PHP_VERSION}-fpm-alpine
 ARG PHP_VERSION
 
 RUN apk add --no-cache nginx \
+        libpq libzip icu-libs libpng freetype libjpeg-turbo \
     && apk add --no-cache --virtual .build-deps \
         libpq-dev icu-dev libzip-dev freetype-dev libjpeg-turbo-dev libpng-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
