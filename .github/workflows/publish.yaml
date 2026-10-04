@@ -53,7 +53,21 @@ jobs:
             ghcr.io/copodservices/php-runtime:${{ matrix.php }}-${{ steps.build_info.outputs.tag }}
             ghcr.io/copodservices/php-runtime:${{ matrix.php }}
 
+      - name: Make the package public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Packages start private; the repository token can flip org packages it owns.
+          gh api --method PATCH /orgs/copodservices/packages/container/php-runtime \
+            -f visibility=public || echo "package visibility must be set manually"
+
       - name: Assert the package is publicly pullable
         run: |
           docker logout ghcr.io
-          docker pull ghcr.io/copodservices/php-runtime:${{ matrix.php }}-${{ steps.build_info.outputs.tag }}
+          for attempt in 1 2 3; do
+            if docker pull ghcr.io/copodservices/php-runtime:${{ matrix.php }}-${{ steps.build_info.outputs.tag }}; then
+              exit 0
+            fi
+            sleep 15
+          done
+          exit 1
